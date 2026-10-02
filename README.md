@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="Moth_banner.png" alt="Moth chess engine">
+  <img src="logo.png" alt="Tiger-1 chess engine">
 </p>
 
-# Moth Chess Engine
+# Tiger-1 Chess Engine
 
-> If Stockfish's NNUE is like a human brain, then Moth's NNUE is comparable to a stegosaurus's brain, containing only around ~400k parameters.
+> A chess engine using compact NNUE
 
-Moth is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
+Tiger-1 is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
 
 ## Evaluation
 
