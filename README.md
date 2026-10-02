@@ -48,13 +48,13 @@ More testing will be done using engine-vs-engine games.
 
 ## Disservin Chess Library
 
-Moth uses the
+Tiger-1 uses the
 [Disservin chess-library](https://github.com/Disservin/chess-library)
 for board representation, legal move generation, and move handling.
 
 ## Building
 
-Moth is written in C++ and requires a C++ compiler supporting modern C++ standards.
+Tiger-1 is written in C++ and requires a C++ compiler supporting modern C++ standards.
 
 ### Requirements
 
@@ -63,7 +63,7 @@ Moth is written in C++ and requires a C++ compiler supporting modern C++ standar
 
 ## UCI
 
-Moth supports the Universal Chess Interface (UCI) protocol and can be used with chess GUIs such as Cute Chess.
+Tiger-1 supports the Universal Chess Interface (UCI) protocol and can be used with chess GUIs such as Cute Chess.
 
 ## License
 
