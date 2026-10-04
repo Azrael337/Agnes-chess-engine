@@ -4,7 +4,7 @@
 // official-stockfish/nnue-pytorch trainer's serialize.py, trained with:
 //
 //     --features HalfKAv2_hm^
-//     --l1 32  --l2 8  --l3 8
+//     --l1 128  --l2 32  --l3 8
 //
 // This is a *from-scratch* rewrite. It deliberately reproduces the exact
 // binary layout and fixed-point arithmetic used by the actual Stockfish
