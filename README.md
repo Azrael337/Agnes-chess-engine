@@ -59,7 +59,7 @@ Tell me about the logo! (hint: it's from an anime)
 
 ## Play Strength
 
-Estimated strength is currently around **2000–2200 Elo**.
+Estimated strength is currently around **2900–3100 Elo**.
 
 More testing will be done using engine-vs-engine games.
 
