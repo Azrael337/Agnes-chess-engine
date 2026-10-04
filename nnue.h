@@ -4,7 +4,7 @@
 // official-stockfish/nnue-pytorch trainer's serialize.py, trained with:
 //
 //     --features HalfKAv2_hm^
-//     --l1 128  --l2 32  --l3 8
+//     --l1 512  --l2 64  --l3 8
 //
 // This is a *from-scratch* rewrite. It deliberately reproduces the exact
 // binary layout and fixed-point arithmetic used by the actual Stockfish
@@ -30,10 +30,10 @@
 namespace nnue {
 
 // ---------------------------------------------------------------------
-// Architecture constants for THIS network (HalfKAv2_hm^, L1=128,L2=32,L3=8)
+// Architecture constants for THIS network (HalfKAv2_hm^, L1=512,L2=64,L3=8)
 // ---------------------------------------------------------------------
-constexpr int L1 = 128;
-constexpr int L2 = 32;
+constexpr int L1 = 512;
+constexpr int L2 = 64;
 constexpr int L3 = 8;
 constexpr int PSQT_BUCKETS = 8;
 constexpr int LS_BUCKETS   = 8;   // "layer stack" (positional head) buckets
