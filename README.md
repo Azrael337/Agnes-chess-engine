@@ -7,7 +7,6 @@
 > A chess engine using compact NNUE
 
 Agnes is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
-Tell me about the logo! (hint: it's from an anime)
 
 ## Evaluation
 
