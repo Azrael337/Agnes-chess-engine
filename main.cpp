@@ -1129,7 +1129,7 @@ void uci_loop() {
         std::string token;
         iss >> token;
         if (token == "uci") {
-            std::cout << "id name Tiger-1\n";
+            std::cout << "id name Agnes\n";
             std::cout << "id author Ranak Chongtham\n";
             std::cout << "option name EvalFile type string default " << g_nnue_path << "\n";
             std::cout << "option name Hash type spin default 256 min 1 max 4096\n";
