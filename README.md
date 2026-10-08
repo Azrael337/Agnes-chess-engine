@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="logo.png" alt="Tiger-1 chess engine">
+  <img src="logo.png" alt="Agnes chess engine">
 </p>
 
-# Tiger-1 Chess Engine
+# Agnes Chess Engine
 
 > A chess engine using compact NNUE
 
-Tiger-1 is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
+Agnes is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
 Tell me about the logo! (hint: it's from an anime)
 
 ## Evaluation
@@ -65,13 +65,13 @@ More testing will be done using engine-vs-engine games.
 
 ## Disservin Chess Library
 
-Tiger-1 uses the
+Agnes uses the
 [Disservin chess-library](https://github.com/Disservin/chess-library)
 for board representation, legal move generation, and move handling.
 
 ## Building
 
-Tiger-1 is written in C++ and requires a C++ compiler supporting modern C++ standards.
+Agnes is written in C++ and requires a C++ compiler supporting modern C++ standards.
 
 ### Requirements
 
@@ -80,7 +80,7 @@ Tiger-1 is written in C++ and requires a C++ compiler supporting modern C++ stan
 
 ## UCI
 
-Tiger-1 fully supports the Universal Chess Interface (UCI) protocol and can be used with any UCI-compatible chess GUI such as Cute Chess, Chess.com, Lichess, and others.
+Agnes fully supports the Universal Chess Interface (UCI) protocol and can be used with any UCI-compatible chess GUI such as Cute Chess, Chess.com, Lichess, and others.
 
 ## Performance
 
