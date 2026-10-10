@@ -4,7 +4,7 @@
 
 # Agnes Chess Engine
 
-> A chess engine using stockfish network
+> A chess engine using a compact nnue
 
 Agnes is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
 
@@ -19,28 +19,45 @@ Agnes is a lightweight UCI chess engine written in C++ with a focus on efficient
 
 ## Search
 
-* **Core Algorithm:** Alpha-Beta Negamax with fail-soft
-* **Move Ordering:** Principal Variation Search (PVS)
-* **Depth:** Iterative Deepening up to 64 plies
-* **Transposition Table:** Configurable 1-4096 MB with generation-based aging
+* **Core Algorithm:** Fail-soft Alpha-Beta Negamax with Principal Variation Search
+Depth: Iterative Deepening up to 64 plies (128-ply search cap)
+* **Transposition Table:** 1-4096 MB, 16-byte tear-safe entries, generation-based
+    aging with depth-preferred replacement, PV flag
 * **Pruning Techniques:**
-  * Late Move Reductions (LMR) with logarithmic formula
-  * Null Move Pruning
-  * Reverse Futility Pruning
-  * Futility Pruning
-  * ProbCut
-  * Delta Pruning in quiescence search
+    * Late Move Pruning (LMP)
+    * Late Move Reductions (LMR) - logarithmic table with graded history
+        adjustment and ~10 contextual terms (PV, cut-node, TT-state, check,
+        killers, improving, threat state)
+    * Null Move Pruning - cut nodes only, adaptive R, verification search at
+        high depth
+    * Reverse Futility Pruning
+    * Futility Pruning - reduced-depth margins with history term, plus
+        capture futility
+    * History Pruning
+    * SEE Pruning - quiets and captures, on reduced depths
+    Razoring
+    * Internal Iterative Reductions (PV and cut nodes)
+    * ProbCut - qsearch pre-check, TT guard, SEE-gated captures, TT store
+    * Mate Distance Pruning
+    * Delta Pruning in quiescence search
 * **Move Ordering Heuristics:**
-  * Killer Move Heuristic
-  * History Heuristic
-  * Continuation History (4 ply)
-  * Countermove Heuristic
+    * TT move first
+    * MVV-LVA with SEE-based good/bad capture split, loosened by capture history
+    Capture History and Capture Continuation History
+    * Continuation History - 6 plies, per side to move
+    * Threat-Indexed History (enemy pawn-attack map)
+    * Pawn-Structure History
+    * Killer Move Heuristic
+    * Countermove Heuristic (color-indexed)
 * **Extensions:**
-  * Singular Extensions
-  * Static exchange evaluation (SEE) for capture ordering and pruning
-* **Time Management:** Aspiration Windows with soft and hard time limits
-* **Quiescence Search:** Delta pruning and tactical awareness
-* **Parallel Search:** Multi-threaded support (up to 8 threads)
+    * Singular Extensions with double and triple extensions
+    * Negative Extensions (reduced TT move on failed singularity test)
+    * Double-extension budgeting per line
+* **Quiescence Search:** full evasion search in check, delta + SEE pruning,
+    correction-history adjusted stand-pat, quiet queen promotions included
+* **Parallel Search:** Lazy SMP up to 8 threads, lock-free shared best move
+    (deepest iteration wins), per-thread aspiration jitter, helper-thread
+    depth skipping
 
 ## UCI Options
 
@@ -67,10 +84,6 @@ More testing will be done using engine-vs-engine games.
 Agnes uses the
 [Disservin chess-library](https://github.com/Disservin/chess-library)
 for board representation, legal move generation, and move handling.
-
-## Stockfish Network
-Agnes uses the [stockfish-nets(specifically-nn-1111cefa1111.nnue)](https://github.com/official-stockfish/networks) for evaluation.
-I had earlier tried to train my own NNUE from scratch but I lack the hardware and sanity to train one, so I rage quit and for some time and settled here where I am right now.
 
 ## Building
 
