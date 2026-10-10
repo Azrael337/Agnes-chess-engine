@@ -4,7 +4,7 @@
 
 # Agnes Chess Engine
 
-> A chess engine using compact NNUE
+> A chess engine using stockfish network
 
 Agnes is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
 
@@ -67,6 +67,10 @@ More testing will be done using engine-vs-engine games.
 Agnes uses the
 [Disservin chess-library](https://github.com/Disservin/chess-library)
 for board representation, legal move generation, and move handling.
+
+## Stockfish Network
+Agnes uses the [stockfish-nets(specifically-nn-1111cefa1111.nnue)](https://github.com/official-stockfish/networks) for evaluation.
+I had earlier tried to train my own NNUE from scratch but I lack the hardware and sanity to train one, so I rage quit and for some time and settled here where I am right now.
 
 ## Building
 
