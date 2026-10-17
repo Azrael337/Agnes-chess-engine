@@ -142,10 +142,6 @@ More testing will be done using engine-vs-engine games.
 * Thread-pool architecture enables strong scalability up to 8 cores
 * Compact network size (88mm NNUE) provides fast inference on modern hardware
 
-## Acknowledgements
-
-* [Disservin chess-library](https://github.com/Disservin/chess-library) — used for board representation, legal move generation, and move handling.
-
 ## License
 
 See [LICENSE](LICENSE).
