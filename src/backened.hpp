@@ -1967,6 +1967,25 @@ class Board {
         return false;
     }
 
+    /// A10: repetition test for SEARCH nodes. One prior occurrence that lies
+    /// inside the search tree (i.e. reached within `searchPly` plies from the
+    /// root) is already a draw by twofold; otherwise two prior occurrences
+    /// (threefold against the game history) count. `searchPly` is the caller's
+    /// distance from the search root (0 at the root).
+    [[nodiscard]] bool isRepetitionSearch(int searchPly) const noexcept {
+        const int size = static_cast<int>(prev_states_.size());
+        const int low  = size - static_cast<int>(hfm_) - 1;
+        int seen       = 0;
+        const State* s = prev_states_.data();
+        for (int i = size - 2; i >= 0 && i >= low; i -= 2) {
+            if (s[i].hash == key_) {
+                if (size - i <= searchPly) return true;   // occurred inside search tree
+                if (++seen == 2) return true;             // threefold with game history
+            }
+        }
+        return false;
+    }
+
     [[nodiscard]] bool isHalfMoveDraw() const noexcept { return hfm_ >= 100; }
 
     [[nodiscard]] std::pair<GameResultReason, GameResult> getHalfMoveDrawType() const noexcept {
