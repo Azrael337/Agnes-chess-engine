@@ -8,7 +8,7 @@
   ![Release](https://img.shields.io/badge/Release-1.0-yellow)
   ![Random](https://img.shields.io/badge/Defeat-ME-red)
 
-**Agnes** is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
+**Agnes** is a lightweight UCI chess engine written in C++ with a focus on strong search and experimentation.
 
 </div>
 
