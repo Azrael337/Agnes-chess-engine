@@ -20,31 +20,9 @@
 //   * skip = fc_0_out[15] * (600*16) / (127*64)
 //   * result = psqt/16 + positional/16, from the side to move's point of view
 //
-// To change the architecture (a net trained with other L1/L2/L3), edit the
-// constants right below; the SIMD kernels need L1 % 128 == 0, (L2+1) % 8 == 0.
 
-#include <cstdlib>
-#ifdef _WIN32
-  #include <malloc.h>   // _aligned_malloc / _aligned_free
-#endif
 
-inline void* aligned_alloc_raw(size_t align, size_t size) {
-#ifdef _WIN32
-    return _aligned_malloc(size, align);
-#else
-    return std::aligned_alloc(align, size);
-#endif
-}
-
-inline void aligned_free_raw(void* p) {
-#ifdef _WIN32
-    _aligned_free(p);
-#else
-    std::free(p);
-#endif
-}
-
-#include "backened.hpp"
+#include "chess.hpp"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -418,7 +396,7 @@ struct Network {
     size_t               ftWbytes = 0;
 
     ~Network() {
-        if (ftWbuf) { aligned_free_raw(ftWbuf); ftWbuf = nullptr; ftW = nullptr; }
+        if (ftWbuf) { std::free(ftWbuf); ftWbuf = nullptr; ftW = nullptr; }
     }
 
     FCLayer fc0[LS_BUCKETS];   // L1 -> FC0_OUT
@@ -507,7 +485,7 @@ struct Network {
             const size_t bytes = (size_t)NUM_REAL_FEATURES * L1 * sizeof(int16_t);
             const size_t huge = 2 * 1024 * 1024;
             const size_t rounded = ((bytes + huge - 1) / huge) * huge;
-            void* p = aligned_alloc_raw(huge, rounded);
+            void* p = std::aligned_alloc(huge, rounded);
             if (p) {
                 std::memcpy(p, ftWeight.data(), bytes);
 #if defined(__linux__)
