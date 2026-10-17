@@ -133,7 +133,7 @@ For a more comfortable experience, connect Agnes to a UCI GUI (e.g. Cute Chess o
 
 Estimated strength is currently around **2900–3100 Elo**.
 
-More testing will be done using engine-vs-engine games.
+Because of the "big" network Agnes will most of the times lose on time thus no sprt tests can be conducted at this stage.
 
 ## Performance
 
