@@ -2,9 +2,10 @@
 //  AGNES — search, time management, UCI.
 //
 //  Conventions:
+//    * backened.hpp is included as "chess.hpp" (it owns the CHESS_HPP guard).
 //    * Scores are engine-cp (NNUE raw * NNUEScale). TT scores are int16.
-//    * MATE_SCORE 32000, MATE_BOUND 31872, NO_EVAL -32768 (C6).
-//    * Fail-soft everywhere (A8/D11).
+//    * MATE_SCORE 32000, MATE_BOUND 31872, NO_EVAL -32768
+//    * Fail-soft everywhere
 // ============================================================================
 
 #include "backened.hpp"
@@ -17,6 +18,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <emmintrin.h>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -229,11 +234,11 @@ inline int score_from_tt(int s, int ply) {
 void tt_clear_parallel();
 
 void tt_free() {
-    if (tt) { std::free(tt); tt = nullptr; }
+    if (tt) { aligned_free_raw(tt); tt = nullptr; }
 }
 void tt_resize(size_t mb) {
     size_t want = std::max<size_t>(mb, 1) * 1024 * 1024 / sizeof(TTCluster);
-    TTCluster* p = static_cast<TTCluster*>(std::aligned_alloc(64, want * sizeof(TTCluster)));
+    TTCluster* p = static_cast<TTCluster*>(aligned_alloc_raw(64, want * sizeof(TTCluster)));
     if (!p) return;                          // keep the old table on OOM
     tt_free();
     tt = p;
@@ -369,7 +374,7 @@ int tt_hashfull() {
 //  Globals shared by search/UCI
 // ─────────────────────────────────────────────────────────────────────────────
 static nnue::Network g_nnue;
-static std::string   g_nnue_path = "88mm.nnue";
+static std::string   g_nnue_path = "nn-1111cefa1111.nnue";
 static int           g_nnue_scale_pct = 40;    // NNUEScale option (F5: keep, one scale)
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2273,10 +2278,60 @@ void spsa_dump() {
 // ─────────────────────────────────────────────────────────────────────────────
 //  UCI (B4/G3/G4/G5)
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//  Startup robustness: locate files next to the executable (not the GUI's cwd)
+//  and load the NNUE lazily so `uci` is answered instantly.
+// ─────────────────────────────────────────────────────────────────────────────
+#ifdef _WIN32
+#include <windows.h>
+#endif
+static const char* DEFAULT_NET_NAME = "nn-1111cefa1111.nnue";
+static bool g_net_load_attempted = false;
+
+static std::string exe_dir() {
+#ifdef _WIN32
+    char buf[MAX_PATH * 2];
+    DWORD n = GetModuleFileNameA(nullptr, buf, (DWORD)sizeof(buf));
+    if (n == 0 || n >= sizeof(buf)) return "";
+    std::string p(buf, n);
+    size_t k = p.find_last_of("\\/");
+    return k == std::string::npos ? "" : p.substr(0, k + 1);
+#else
+    char buf[4096];
+    ssize_t n = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+    if (n <= 0) return "";
+    std::string p(buf, (size_t)n);
+    size_t k = p.find_last_of('/');
+    return k == std::string::npos ? "" : p.substr(0, k + 1);
+#endif
+}
+
+static bool file_exists(const std::string& p) {
+    std::ifstream f(p, std::ios::binary);
+    return (bool)f;
+}
+
+// Called from isready/go/ucinewgame; does the (slow) net load exactly once.
+static void ensure_net_loaded() {
+    if (g_net_load_attempted) return;
+    g_net_load_attempted = true;
+    std::string path = g_nnue_path;
+    if (!file_exists(path)) {
+        std::string alt = exe_dir() + DEFAULT_NET_NAME;
+        if (file_exists(alt)) path = alt;
+    }
+    if (g_nnue.load(path))
+        std::cout << "info string loaded NNUE from " << path << "\n";
+    else
+        std::cout << "info string no NNUE loaded (" << path << "): "
+                  << g_nnue.lastError << " - falling back to material eval\n";
+    std::cout.flush();
+}
+
 void print_options() {
     std::cout << "id name Agnes\n";
     std::cout << "id author Ranak Chongtham\n";
-    std::cout << "option name EvalFile type string default " << g_nnue_path << "\n";
+    std::cout << "option name EvalFile type string default " << DEFAULT_NET_NAME << "\n";
     std::cout << "option name Hash type spin default 256 min 1 max 65536\n";
     std::cout << "option name Threads type spin default 1 min 1 max 256\n";
     std::cout << "option name Move Overhead type spin default 30 min 10 max 100\n";
@@ -2306,6 +2361,8 @@ void uci_loop() {
         if (token == "uci") {
             print_options();
         } else if (token == "isready") {
+            wait_for_search_end();
+            ensure_net_loaded();
             std::cout << "readyok\n";
         } else if (token == "ucinewgame") {
             wait_for_search_end();
@@ -2323,11 +2380,19 @@ void uci_loop() {
             std::getline(iss, value);
             if (!value.empty() && value.front() == ' ') value.erase(0, 1);
             if (name == "EvalFile" && !value.empty()) {
+                while (!value.empty() && (value.back() == '\r' || value.back() == ' ')) value.pop_back();
                 g_nnue_path = value;
-                if (g_nnue.load(g_nnue_path))
-                    std::cout << "info string loaded NNUE from " << g_nnue_path << "\n";
+                g_net_load_attempted = true;
+                std::string path = value;
+                if (!file_exists(path)) {                       // GUI cwd != exe dir
+                    std::string alt = exe_dir() + value;
+                    if (file_exists(alt)) path = alt;
+                    else if (file_exists(exe_dir() + DEFAULT_NET_NAME)) path = exe_dir() + DEFAULT_NET_NAME;
+                }
+                if (g_nnue.load(path))
+                    std::cout << "info string loaded NNUE from " << path << "\n";
                 else
-                    std::cout << "info string failed to load NNUE from " << g_nnue_path
+                    std::cout << "info string failed to load NNUE from " << path
                               << " (" << g_nnue.lastError << ")\n";
             } else if (name == "Threads") {
                 g_num_threads = std::clamp(std::stoi(value), 1, 256);   // A19
@@ -2383,6 +2448,7 @@ void uci_loop() {
             }
         } else if (token == "go") {
             wait_for_search_end();
+            ensure_net_loaded();
             GoParams g;
             int depth = -1;
             std::string sm;
@@ -2472,8 +2538,10 @@ void uci_loop() {
         } else if (token == "spsa_dump" || token == "tune_dump") {
             spsa_dump();
         } else if (token == "eval") {
+            ensure_net_loaded();
             std::cout << "eval " << evaluate(board) << "\n";
         } else if (token == "d") {
+            ensure_net_loaded();
             std::cout << board << "\n";
             std::cout << "FEN: "  << board.getFen() << "\n";
             std::cout << "Hash: " << board.hash() << "\n";
@@ -2501,13 +2569,7 @@ int main(int argc, char** argv) {
         if (a == "perftsuite") return perftsuite();
     }
 
-    if (g_nnue.load(g_nnue_path))
-        std::cout << "info string loaded NNUE from " << g_nnue_path << "\n";
-    else
-        std::cout << "info string no NNUE loaded (" << g_nnue_path << "): "
-                  << g_nnue.lastError << " — falling back to material eval\n";
-    std::cout.flush();
-
+    // NNUE is loaded lazily (ensure_net_loaded) so nothing is printed before `uci`.
     uci_loop();
     tt_free();
     return 0;
