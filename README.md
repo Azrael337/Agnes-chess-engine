@@ -1,8 +1,14 @@
 # Agnes Chess Engine
 
-<p align="center">
-  <img src="logo.png" alt="Agnes chess engine">
-</p>
+<div align="center">
+  <img src="logo.png" alt="Agnes chess engine" width="300">
+
+  ![License](https://img.shields.io/badge/License-GPL_3.0-green)
+  ![Language](https://img.shields.io/badge/Language-C++-orange)
+  ![Release](https://img.shields.io/badge/Release-1.0-yellow)
+  ![Random](https://img.shields.io/badge/Defeat-ME-red)
+</div>
+
 
 > A simple strong competitive chess engine in C++
 
