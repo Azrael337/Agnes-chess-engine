@@ -211,13 +211,16 @@ Agnes is compatible with any UCI-capable chess GUI such as Cute Chess, Banksia, 
 ### Requirements
 
 * A C++ compiler supporting C++17 or later (GCC 9+, Clang 10+, or MSVC 2019+)
-
+  
+```command
+g++ -O3 -std=c++17 -mavx2 -mbmi2 -static -static-libgcc -static-libstdc++ -o agnes.exe main.cpp
+```
 ## Getting Started
 
 Once built, you can test the engine directly from a terminal:
 
 ```bash
-./build/agnes
+./agnes
 ```
 
 ```text
