@@ -1,10 +1,10 @@
+# Agnes Chess Engine
+
 <p align="center">
   <img src="logo.png" alt="Agnes chess engine">
 </p>
 
-# Agnes Chess Engine
-
-> A chess engine using a compact nnue
+> A simple strong competitive chess engine in C++
 
 Agnes is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
 
