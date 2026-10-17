@@ -194,8 +194,8 @@ Node-limited searches (`go nodes N`) stop when the node count is reached. `go de
 | Option      | Type   | Default | Range     | Description                                        |
 | ----------- | ------ | ------- | --------- | -------------------------------------------------- |
 | `EvalFile`  | string | —       | —         | Path to a custom NNUE evaluation file              |
-| `Hash`      | spin   | 256     | 1–4096    | Transposition table size in MB                     |
-| `Threads`   | spin   | 1       | 1–8       | Number of search threads (Lazy SMP)                |
+| `Hash`      | spin   | 256     | 1–65536   | Transposition table size in MB                     |
+| `Threads`   | spin   | 1       | 1–256     | Number of search threads (Lazy SMP)                |
 | `NNUEScale` | spin   | 40      | 1–400     | NNUE evaluation scaling factor                     |
 
 ## UCI Commands
