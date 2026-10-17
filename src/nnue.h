@@ -23,7 +23,28 @@
 // To change the architecture (a net trained with other L1/L2/L3), edit the
 // constants right below; the SIMD kernels need L1 % 128 == 0, (L2+1) % 8 == 0.
 
-#include "chess.hpp"
+#include <cstdlib>
+#ifdef _WIN32
+  #include <malloc.h>   // _aligned_malloc / _aligned_free
+#endif
+
+inline void* aligned_alloc_raw(size_t align, size_t size) {
+#ifdef _WIN32
+    return _aligned_malloc(size, align);
+#else
+    return std::aligned_alloc(align, size);
+#endif
+}
+
+inline void aligned_free_raw(void* p) {
+#ifdef _WIN32
+    _aligned_free(p);
+#else
+    std::free(p);
+#endif
+}
+
+#include "backened.hpp"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -34,6 +55,10 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <cstdlib>
+#if defined(__linux__)
+#include <sys/mman.h>
+#endif
 #if defined(__AVX2__)
 #include <immintrin.h>
 #endif
@@ -223,7 +248,26 @@ inline void ft_output(const int16_t* stmAcc, const int16_t* oppAcc, uint8_t* out
 #endif
 }
 
-#if defined(__AVX2__)
+#if defined(__AVX512VNNI__) || defined(__AVXVNNI__)
+// F6: VNNI path — vpdpbusd fuses maddubs+madd+add into one instruction per
+// 32 output lanes. Same packed weight layout, same results bit-for-bit.
+template <int NG>
+inline void fc0_block_vnni(const uint32_t* in32, const uint16_t* nz, int nnz, const int8_t* W,
+                           size_t chunkStride, const int32_t* bias, int32_t* out) {
+    __m256i r[NG];
+    for (int g = 0; g < NG; ++g) r[g] = _mm256_loadu_si256((const __m256i*)(bias + g * 8));
+    for (int n = 0; n < nnz; ++n) {
+        const int c = nz[n];
+        const __m256i x = _mm256_set1_epi32((int)in32[c]);
+        const int8_t* w = W + (size_t)c * chunkStride;
+        for (int g = 0; g < NG; ++g)
+            r[g] = _mm256_dpbusd_epi32(r[g], x, _mm256_loadu_si256((const __m256i*)(w + g * 32)));
+    }
+    for (int g = 0; g < NG; ++g) _mm256_storeu_si256((__m256i*)(out + g * 8), r[g]);
+}
+#endif
+
+#if defined(__AVX512VNNI__) || defined(__AVXVNNI__) || defined(__AVX2__)
 template <int NG>
 inline void fc0_block(const uint32_t* in32, const uint16_t* nz, int nnz, const int8_t* W,
                       size_t chunkStride, const int32_t* bias, int32_t* out) {
@@ -258,7 +302,30 @@ inline void fc0_sparse(const uint8_t* ftOut, const int8_t* P, const int32_t* bia
     std::memcpy(in32, ftOut, sizeof(in32));
     uint16_t nz[NCHUNK];
     int nnz = 0;
-#if defined(__AVX2__)
+#if defined(__AVX512VNNI__) || defined(__AVXVNNI__)
+    {
+        const __m256i zero = _mm256_setzero_si256();
+        for (int c = 0; c < NCHUNK; c += 8) {
+            __m256i v = _mm256_loadu_si256((const __m256i*)(in32 + c));
+            unsigned m = (~(unsigned)_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(v, zero)))) & 0xFFu;
+            while (m) {
+                nz[nnz++] = (uint16_t)(c + __builtin_ctz(m));
+                m &= m - 1;
+            }
+        }
+    }
+    constexpr int G = FC0_OUT / 8;
+    for (int b0 = 0; b0 < G; b0 += 8) {
+        const int ng = std::min(8, G - b0);
+        const int8_t* W = P + (size_t)b0 * 32;
+        switch (ng) {
+            case 8: fc0_block_vnni<8>(in32, nz, nnz, W, FC0_OUT * 4, bias + b0 * 8, out + b0 * 8); break;
+            case 4: fc0_block_vnni<4>(in32, nz, nnz, W, FC0_OUT * 4, bias + b0 * 8, out + b0 * 8); break;
+            case 2: fc0_block_vnni<2>(in32, nz, nnz, W, FC0_OUT * 4, bias + b0 * 8, out + b0 * 8); break;
+            default: fc0_block_vnni<1>(in32, nz, nnz, W, FC0_OUT * 4, bias + b0 * 8, out + b0 * 8); break;
+        }
+    }
+#elif defined(__AVX2__)
     {
         const __m256i zero = _mm256_setzero_si256();
         for (int c = 0; c < NCHUNK; c += 8) {
@@ -343,6 +410,17 @@ struct Network {
     std::vector<int16_t> ftWeight;        // [NUM_REAL_FEATURES][L1]    (already *2)
     std::vector<int32_t> ftPsqtWeight;    // [NUM_REAL_FEATURES][PSQT_BUCKETS]
 
+    // F4: 2MB-aligned, hugepage-backed mirror of ftWeight (132 MB). The base
+    // pointer ftW is what the accumulator walk actually reads; on allocation
+    // failure it simply falls back to the vector storage.
+    int16_t*             ftW = nullptr;
+    void*                ftWbuf = nullptr;
+    size_t               ftWbytes = 0;
+
+    ~Network() {
+        if (ftWbuf) { aligned_free_raw(ftWbuf); ftWbuf = nullptr; ftW = nullptr; }
+    }
+
     FCLayer fc0[LS_BUCKETS];   // L1 -> FC0_OUT
     FCLayer fc1[LS_BUCKETS];   // FC1_REAL_IN (padded to FC1_IN) -> L3
     FCLayer fc2[LS_BUCKETS];   // L3 -> 1
@@ -423,6 +501,23 @@ struct Network {
                         fc0[b].weight[(size_t)j * fc0[b].padded_in + i];
         }
 
+        // F4: relocate FT weights into 2MB-aligned pages and hand them to the
+        // kernel's huge-page allocator (Linux THP). Falls back silently.
+        {
+            const size_t bytes = (size_t)NUM_REAL_FEATURES * L1 * sizeof(int16_t);
+            const size_t huge = 2 * 1024 * 1024;
+            const size_t rounded = ((bytes + huge - 1) / huge) * huge;
+            void* p = aligned_alloc_raw(huge, rounded);
+            if (p) {
+                std::memcpy(p, ftWeight.data(), bytes);
+#if defined(__linux__)
+                madvise(p, rounded, MADV_HUGEPAGE);
+#endif
+                ftWbuf = p; ftWbytes = rounded;
+                ftW = static_cast<int16_t*>(p);
+            }
+        }
+
         loaded = true;
         return true;
     }
@@ -456,7 +551,7 @@ struct Network {
     // -----------------------------------------------------------------
     // Accumulator maintenance
     // -----------------------------------------------------------------
-    inline const int16_t* wrow(int row) const { return &ftWeight[(size_t)row * L1]; }
+    inline const int16_t* wrow(int row) const { return ftW ? &ftW[(size_t)row * L1] : &ftWeight[(size_t)row * L1]; }
     inline const int32_t* prow(int row) const { return &ftPsqtWeight[(size_t)row * PSQT_BUCKETS]; }
 
     inline void add_feature(PerspectiveAccumulator& pa, int row) const {
