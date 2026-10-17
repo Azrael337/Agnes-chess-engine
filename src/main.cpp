@@ -2,7 +2,6 @@
 //  AGNES — search, time management, UCI.
 //
 //  Conventions:
-//    * backened.hpp is included as "chess.hpp" (it owns the CHESS_HPP guard).
 //    * Scores are engine-cp (NNUE raw * NNUEScale). TT scores are int16.
 //    * MATE_SCORE 32000, MATE_BOUND 31872, NO_EVAL -32768
 //    * Fail-soft everywhere
