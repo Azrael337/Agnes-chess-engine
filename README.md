@@ -4,6 +4,9 @@
   <img src="logo.png" alt="Agnes chess engine">
 </p>
 
+  [![License][license-badge]][license-link]
+  [![Release][release-badge]][release-link]
+
 > A simple strong competitive chess engine in C++
 
 Agnes is a lightweight UCI chess engine written in C++ with a focus on efficient search and a compact NNUE evaluation.
