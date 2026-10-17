@@ -8,7 +8,8 @@
   ![Release](https://img.shields.io/badge/Release-1.0-yellow)
   ![Random](https://img.shields.io/badge/Defeat-ME-red)
 
-**Agnes** is a lightweight UCI chess engine written in C++ with a focus on strong search and experimentation.
+**A simple strong competitive chess engine in C++.**
+This is mainly just an personal experimental chess engine project.
 
 </div>
 
@@ -248,3 +249,6 @@ Because of the "big" network Agnes will most of the times lose on time thus no s
 ## License
 
 See [LICENSE](LICENSE).
+
+If anyone would like to help build the engine like training a fresh nnue for Agnes or if you found any bugs please dm me on Discord(azrael_6989)
+And thanks for showing interest into my engine!
