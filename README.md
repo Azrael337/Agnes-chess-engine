@@ -56,7 +56,14 @@ Agnes is compatible with any UCI-capable chess GUI such as Cute Chess, Banksia, 
 * A C++ compiler supporting C++17 or later (GCC 9+, Clang 10+, or MSVC 2019+)
   
 ```command
-g++ -O3 -std=c++17 -mavx2 -mbmi2 -static -static-libgcc -static-libstdc++ -o agnes.exe main.cpp
+# AVX2 (most modern CPUs)
+g++ -std=c++17 -O3 -mavx2 -mbmi -mbmi2 -mpopcnt -DNDEBUG -DBACKENED_NO_VIRTUAL -pthread agnes.cpp -o agnes-avx2
+
+# AVX-512 VNNI (the dpbusd path in nnue.h)
+g++ -std=c++17 -O3 -mavx512f -mavx512bw -mavx512vl -mavx512vnni -mbmi2 -DNDEBUG -DBACKENED_NO_VIRTUAL -pthread agnes.cpp -o agnes-vnni
+
+# Baseline, for very old CPUs (slow scalar NNUE)
+g++ -std=c++17 -O3 -msse4.2 -mpopcnt -DNDEBUG -DBACKENED_NO_VIRTUAL -pthread agnes.cpp -o agnes-sse42
 ```
 ## Getting Started
 
