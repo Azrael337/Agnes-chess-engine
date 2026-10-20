@@ -3,13 +3,13 @@
 <div align="center">
   <img src="logo.png" alt="Agnes chess engine" width="300">
 
-  ![License](https://img.shields.io/badge/License-GPL_3.0-green)
-  ![Language](https://img.shields.io/badge/Language-C++-orange)
-  ![Release](https://img.shields.io/badge/Release-1.0-yellow)
-  ![Random](https://img.shields.io/badge/Defeat-ME-red)
+  ![License](https://img.shields.io/badge/License-GPL_3.0-green?style=for-the-badge)
+  ![Release](https://img.shields.io/badge/Release-Agnes_1.0-yellow?style=for-the-badge)
+  <br>
+  ![Random](https://img.shields.io/badge/Defeat_ME-<3-red?style=for-the-badge)
 
-**A simple strong competitive chess engine in C++.**
-This is mainly just an personal experimental chess engine project.
+
+**A simple strong competitive chess engine in C++. This is mainly just an personal experimental chess engine project.**
 
 </div>
 
@@ -25,7 +25,6 @@ This is mainly just an personal experimental chess engine project.
 - [Getting Started](#getting-started)
 - [Play Strength](#play-strength)
 - [Performance](#performance)
-- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ---
@@ -35,7 +34,6 @@ Agnes uses stockfish's older nnue for it's evaluation, specifically nn-1111cefa1
 
 ## Search
 Nothing too fancy just negamax with fail-soft aplha-beta pruning and lots of pruning and move ordering identical to other top engines.
-Multi Parallel search going upto 256 threads.
 
 ## UCI Options
 
@@ -98,6 +96,3 @@ Because of the "big" network Agnes will most of the times lose on time thus no s
 ## License
 
 See [LICENSE](LICENSE).
-
-If anyone would like to help build the engine like training a fresh nnue for Agnes or if you found any bugs please dm me on Discord(azrael_6989)
-And thanks for showing interest into my engine!
