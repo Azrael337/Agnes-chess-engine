@@ -90,8 +90,7 @@ Because of the "big" network Agnes will most of the times lose on time thus no s
 
 * Efficient incremental NNUE updates for minimal eval overhead
 * Dynamic time management adapts to search depth and position complexity
-* Thread-pool architecture enables strong scalability up to 8 cores
-* Compact network size (88mm NNUE) provides fast inference on modern hardware
+* Thread-pool architecture enables strong scalability up to 256 cores
 
 ## License
 
