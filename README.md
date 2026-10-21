@@ -9,7 +9,7 @@
   ![Random](https://img.shields.io/badge/Defeat_ME-<3-red?style=for-the-badge)
 
 
-**A simple strong competitive chess engine in C++. This is mainly just an personal experimental chess engine project.**
+**A simple strong chess engine in using a small nnue and an efficient search**
 
 </div>
 
@@ -30,7 +30,9 @@
 ---
 
 ## Evaluation
-Agnes uses stockfish's older nnue for it's evaluation, specifically nn-1111cefa1111.nnue (stockfish 17 used it as it's "big" nnue).
+Agnes uses stockfish style net based on the below architecture:
+- features HalfKAv2_hm^
+- l1 256  --l2 16  --l3 32
 
 ## Search
 Nothing too fancy just negamax with fail-soft aplha-beta pruning and lots of pruning and move ordering identical to other top engines.
@@ -82,9 +84,10 @@ For a more comfortable experience, connect Agnes to a UCI GUI (e.g. Cute Chess o
 
 ## Play Strength
 
-Estimated strength is currently around **2900–3100 Elo**.
+Estimated strength is currently around **2900–3100 Elo** as per release 1.0.
 
-Because of the "big" network Agnes will most of the times lose on time thus no sprt tests can be conducted at this stage.
+Release 2.0* can be 3400 elo
+
 
 ## Performance
 
