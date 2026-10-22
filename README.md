@@ -9,7 +9,7 @@
   ![Random](https://img.shields.io/badge/Defeat_ME-<3-red?style=for-the-badge)
 
 
-**A simple strong chess engine in using a small nnue and an efficient search**
+**A simple strong chess engine in C++ using a small nnue and an efficient search**
 
 </div>
 
