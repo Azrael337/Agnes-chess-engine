@@ -4,12 +4,13 @@
   <img src="logo.png" alt="Agnes chess engine" width="300">
 
   ![License](https://img.shields.io/badge/License-GPL_3.0-green?style=for-the-badge)
+  ![C++](https://img.shields.io/badge/C++-17-purple?style=for-the-badge)
   ![Release](https://img.shields.io/badge/Release-Agnes_1.0-yellow?style=for-the-badge)
-  <br>
-  ![Random](https://img.shields.io/badge/Defeat_ME-<3-red?style=for-the-badge)
+ <br>
+  ![Random](https://img.shields.io/badge/Defeat_ME-🤍-red?style=for-the-badge)
 
 
-**A simple strong chess engine in C++ using a small nnue and an efficient search**
+**A simple strong chess engine in C++ using a compact nnue and an efficient search**
 
 </div>
 
@@ -32,7 +33,7 @@
 ## Evaluation
 Agnes uses stockfish style net based on the below architecture:
 - features HalfKAv2_hm^
-- --l1 256  --l2 16  --l3 32
+- --l1 512  --l2 16  --l3 32
 - trained on nnue-pytorch pipeline on a cpu(ryzen 5825u) **,it was painful**
 
 ## Search
