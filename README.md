@@ -32,7 +32,8 @@
 ## Evaluation
 Agnes uses stockfish style net based on the below architecture:
 - features HalfKAv2_hm^
-- l1 256  --l2 16  --l3 32
+- --l1 256  --l2 16  --l3 32
+- trained on nnue-pytorch pipeline on a cpu(ryzen 5825u) **,it was painful**
 
 ## Search
 Nothing too fancy just negamax with fail-soft aplha-beta pruning and lots of pruning and move ordering identical to other top engines.
