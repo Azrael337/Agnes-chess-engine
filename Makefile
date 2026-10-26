@@ -1,5 +1,5 @@
 CXX      ?= g++
-SRC       = src/main.cpp
+SRC       = src/agnes.cpp
 
 CXXFLAGS  = -std=c++17 -O3 -flto -fno-exceptions -DCHESS_NO_EXCEPTIONS -DNDEBUG -DBACKENED_NO_VIRTUAL -Wall -pthread -Isrc -Isrc/tb
 LDFLAGS   = -flto -pthread
