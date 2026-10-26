@@ -53,20 +53,21 @@ Agnes is compatible with any UCI-capable chess GUI such as Cute Chess, Banksia, 
 
 ## Building
 
-### Requirements
+### How to compile
 
-* A C++ compiler supporting C++17 or later (GCC 9+, Clang 10+, or MSVC 2019+)
-  
-```command
-# AVX2 (most modern CPUs)
-g++ -std=c++17 -O3 -mavx2 -mbmi -mbmi2 -mpopcnt -DNDEBUG -DBACKENED_NO_VIRTUAL -pthread agnes.cpp -o agnes-avx2
-
-# AVX-512 VNNI (the dpbusd path in nnue.h)
-g++ -std=c++17 -O3 -mavx512f -mavx512bw -mavx512vl -mavx512vnni -mbmi2 -DNDEBUG -DBACKENED_NO_VIRTUAL -pthread agnes.cpp -o agnes-vnni
-
-# Baseline, for very old CPUs (slow scalar NNUE)
-g++ -std=c++17 -O3 -msse4.2 -mpopcnt -DNDEBUG -DBACKENED_NO_VIRTUAL -pthread agnes.cpp -o agnes-sse42
 ```
+cd /wherever/the/makefile/is
+
+make "bare avx2"
+make avx2/avx512/bmi2/vnni
+```
+
+- avx2      => any CPU since ~2013
+- avx512    => Ice Lake+/Zen 4+
+- bmi2      => 	Intel Haswell+/AMD Zen 1–3
+- vnni      => Alder Lake+/Zen 5
+- native    => only for the machine you build on, don't distribute
+
 ## Getting Started
 
 Once built, you can test the engine directly from a terminal:
@@ -100,3 +101,6 @@ Release 2.0* can be 3400 elo
 ## License
 
 See [LICENSE](LICENSE).
+
+## ???
+Apologies for the unreadable code but this is the way I code
